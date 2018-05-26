@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import os
 import subprocess
 import sys
 
@@ -8,6 +9,9 @@ from vncorenlp import VnCoreNLPServer
 
 def main():
     try:
+        if not os.path.isfile(VnCoreNLPServer):
+            raise FileNotFoundError('File "VnCoreNLPServer.jar" was not found, please re-install this package.')
+
         if subprocess.call(['java', '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True):
             raise FileNotFoundError('Java was not found, please install first.')
 
