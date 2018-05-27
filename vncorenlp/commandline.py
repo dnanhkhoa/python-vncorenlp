@@ -13,7 +13,7 @@ def main():
             raise FileNotFoundError('File "VnCoreNLPServer.jar" was not found, please re-install this package.')
 
         if subprocess.call(['java', '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True):
-            raise FileNotFoundError('Java was not found, please install first.')
+            raise FileNotFoundError('Java was not found, please install JRE 1.8 first.')
 
         args = ['java', '-Xmx2g', '-jar', VNCORENLP_SERVER]
 
