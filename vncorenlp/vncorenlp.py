@@ -59,7 +59,7 @@ class VnCoreNLP(object):
         try:
             response = requests.get(url=self.url, timeout=self.timeout)
             response.raise_for_status()
-            return response.status_code == requests.codes.ok
+            return response.ok
         except RequestException as e:
             self.logger.exception(e)
         return False
@@ -71,14 +71,9 @@ class VnCoreNLP(object):
         self.close()
 
     def annotate(self, text, annotators=None):
-        if annotators:
-            pass
-        else:
-            annotators = self.annotators
-
         data = {
             'text': text.encode('UTF-8'),
-            'props': annotators
+            'props': annotators or self.annotators
         }
         response = requests.post(url=self.url + '/handle', data=data, timeout=self.timeout)
         response.raise_for_status()
