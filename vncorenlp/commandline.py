@@ -9,9 +9,11 @@ from vncorenlp import VNCORENLP_SERVER
 
 def main():
     try:
+        # Check if server file exists
         if not os.path.isfile(VNCORENLP_SERVER):
             raise FileNotFoundError('File "VnCoreNLPServer.jar" was not found, please re-install this package.')
 
+        # Check if Java exists
         if subprocess.call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True):
             raise FileNotFoundError('Java was not found, please install JRE or JDK 1.8 first.')
 
@@ -24,6 +26,7 @@ def main():
                 pos += 1
             args.extend(sys.argv[pos:])
 
+        # Start server
         subprocess.call(args)
     except KeyboardInterrupt:
         pass
