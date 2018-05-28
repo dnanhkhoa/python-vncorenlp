@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import re
 import subprocess
 
 import requests
+from requests.exceptions import RequestException
 
 __author__ = 'dnanhkhoa'
 
@@ -13,9 +15,12 @@ VNCORENLP_SERVER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath
 
 
 class VnCoreNLP(object):
-    def __init__(self, quiet=True):
-        self.quiet = quiet
+    def __init__(self, address='0.0.0.0', port=None, timeout=30, annotators='wseg,pos,ner,parse', quiet=True):
         self.logger = logging.getLogger(__name__)
+
+        self.annotators = re.split('\s*,\s*', annotators.strip())
+        self.url = None
+        self.timeout = timeout
 
         if not os.path.isfile(VNCORENLP_SERVER):
             raise FileNotFoundError('File "VnCoreNLPServer.jar" was not found, please re-install this package.')
@@ -24,7 +29,7 @@ class VnCoreNLP(object):
             raise FileNotFoundError('Java was not found, please install JRE 1.8 first.')
 
         args = ['java', '-Xmx2g', '-jar', VNCORENLP_SERVER]
-        self.process = subprocess.call(args)
+        self.process = None  # subprocess.Popen(args)
 
     def close(self):
         if self.process:
@@ -38,8 +43,13 @@ class VnCoreNLP(object):
             self.logger.info(__class__.__name__ + ': done.')
 
     def is_alive(self):
-        response = requests.get('http://112.213.86.221:9000')
-        return response.status_code == requests.codes.ok
+        try:
+            response = requests.get(url=self.url, timeout=self.timeout)
+            response.raise_for_status()
+            return response.status_code == requests.codes.ok
+        except RequestException as e:
+            self.logger.exception(e)
+        return False
 
     def __enter__(self):
         return self
