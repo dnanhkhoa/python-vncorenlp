@@ -37,32 +37,36 @@ public final class VnCoreNLPServer {
 	private final static String NERRECOGNIZER = "ner";
 	private final static String DEPENDENCYPARSER = "parse";
 
-	private final static String VNCORENLP_CLASS = "vn.pipeline.VnCoreNLP";
-	private final static String VNCORENLP_ANNOTATE_METHOD = "annotate";
-	private final static String VNCORENLP_WORDSEGMENTER_FIELD = "wordSegmenter";
-	private final static String VNCORENLP_POSTAGGER_FIELD = "posTagger";
-	private final static String VNCORENLP_NERRECOGNIZER_FIELD = "nerRecognizer";
-	private final static String VNCORENLP_DEPENDENCYPARSER_FIELD = "dependencyParser";
+	private final static String WORDSEGMENTER_CLASS = "vn.corenlp.wordsegmenter.WordSegmenter";
+	private final static String WORDSEGMENTER_INITIALIZE_METHOD = "initialize";
 
-	private final static String ANNOTATION_CLASS = "vn.pipeline.Annotation";
-	private final static String ANNOTATION_DETECTLANGUAGE_METHOD = "detectLanguage";
-	private final static String ANNOTATION_GETSENTENCES_METHOD = "getSentences";
+	private final static String POSTAGGER_CLASS = "vn.corenlp.postagger.PosTagger";
+	private final static String POSTAGGER_INITIALIZE_METHOD = "initialize";
+
+	private final static String NERRECOGNIZER_CLASS = "vn.corenlp.ner.NerRecognizer";
+	private final static String NERRECOGNIZER_INITIALIZE_METHOD = "initialize";
+
+	private final static String DEPENDENCYPARSER_CLASS = "vn.corenlp.parser.DependencyParser";
+	private final static String DEPENDENCYPARSER_INITIALIZE_METHOD = "initialize";
+
+	private final static String TOKENIZER_CLASS = "vn.corenlp.tokenizer.Tokenizer";
+	private final static String TOKENIZER_TOKENIZE_METHOD = "tokenize";
+	private final static String TOKENIZER_JOINSENTENCES_METHOD = "joinSentences";
+
+	private final static String UTILS_CLASS = "vn.pipeline.Utils";
+	private final static String UTILS_DETECTLANGUAGE_METHOD = "detectLanguage";
 
 	private final static String SENTENCE_CLASS = "vn.pipeline.Sentence";
 	private final static String SENTENCE_GETWORDS_METHOD = "getWords";
 
 	private static URLClassLoader classLoader = null;
 
-	private static Class<?> vnCoreNLPClass = null;
-	private static Object vnCoreNLPInstance = null;
-	private static Method annotate = null;
+	private static Object WordSegmenter = null;
+	private static Object PosTagger = null;
+	private static Object NerRecognizer = null;
+	private static Object DependencyParser = null;
 
-	private final static Map<String, Object> vnCoreNLPFields = new HashMap<>();
-
-	private static Class<?> annotationClass = null;
-	private static Constructor<?> getAnnotation = null;
 	private static Method detectLanguage = null;
-	private static Method getSentences = null;
 
 	private static Class<?> sentenceClass = null;
 	private static Method getWords = null;
@@ -114,29 +118,6 @@ public final class VnCoreNLPServer {
 			vnCoreNLPInstance = constructor.newInstance(new Object[] { annotators.toArray() });
 
 			// Get fields corresponding to each annotator
-			Field wordSegmenter = vnCoreNLPClass.getDeclaredField(VNCORENLP_WORDSEGMENTER_FIELD);
-			wordSegmenter.setAccessible(true);
-			vnCoreNLPFields.put(WORDSEGMENTER, wordSegmenter);
-			vnCoreNLPFields.put(WORDSEGMENTER + ".o", wordSegmenter.get(vnCoreNLPInstance));
-			wordSegmenter.set(vnCoreNLPInstance, null);
-
-			Field posTagger = vnCoreNLPClass.getDeclaredField(VNCORENLP_POSTAGGER_FIELD);
-			posTagger.setAccessible(true);
-			vnCoreNLPFields.put(POSTAGGER, posTagger);
-			vnCoreNLPFields.put(POSTAGGER + ".o", posTagger.get(vnCoreNLPInstance));
-			posTagger.set(vnCoreNLPInstance, null);
-
-			Field nerRecognizer = vnCoreNLPClass.getDeclaredField(VNCORENLP_NERRECOGNIZER_FIELD);
-			nerRecognizer.setAccessible(true);
-			vnCoreNLPFields.put(NERRECOGNIZER, nerRecognizer);
-			vnCoreNLPFields.put(NERRECOGNIZER + ".o", nerRecognizer.get(vnCoreNLPInstance));
-			nerRecognizer.set(vnCoreNLPInstance, null);
-
-			Field dependencyParser = vnCoreNLPClass.getDeclaredField(VNCORENLP_DEPENDENCYPARSER_FIELD);
-			dependencyParser.setAccessible(true);
-			vnCoreNLPFields.put(DEPENDENCYPARSER, dependencyParser);
-			vnCoreNLPFields.put(DEPENDENCYPARSER + ".o", dependencyParser.get(vnCoreNLPInstance));
-			dependencyParser.set(vnCoreNLPInstance, null);
 
 			// OK
 			LOGGER.info("Loading VnCoreNLP ... OK");
@@ -165,7 +146,7 @@ public final class VnCoreNLPServer {
 	private static void showHelpMessage(Options options) {
 		// Show help message
 		HelpFormatter helpFormatter = new HelpFormatter();
-		helpFormatter.printHelp("java -Xmx2g -jar VnCoreNLPServer.jar <VnCoreNLP-File> [Options ...]", options);
+		helpFormatter.printHelp("java -Xmx2g -jar VnCoreNLPServer.jar <VnCoreNLP> [Options ...]", options);
 	}
 
 	public static void main(String[] args) {
@@ -224,17 +205,28 @@ public final class VnCoreNLPServer {
 	}
 
 	private static void cleanup() {
+		LOGGER.info("VnCoreNLPServer is cleaning up...");
 		try {
+			LOGGER.info("VnCoreNLPServer is closing class loader...");
 			classLoader.close();
-			Spark.stop();
-			LOGGER.info("VnCoreNLP Server is shutting down.");
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 		}
+		try {
+			LOGGER.info("VnCoreNLPServer is stopping Spark services...");
+			Spark.stop();
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage(), e);
+		}
+		LOGGER.info("VnCoreNLPServer is done cleaning up.");
 	}
 
 	public static String index() {
-		return "VnCoreNLP Server is running.";
+		return "VnCoreNLPServer is running.";
+	}
+
+	private static List<Object> annotate(String text) {
+		return null;
 	}
 
 	private static Map<String, Object> parse(String text, String props) {
