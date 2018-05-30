@@ -72,10 +72,6 @@ public final class VnCoreNLPServer {
                 System.setProperty("user.dir", vnCoreNLPDir);
             }
 
-            for (String annotator : DEFAULT_ANNOTATORS) {
-                INITIALIZED_ANNOTATORS.put(annotator, null);
-            }
-
             // Load classes and methods
             Class<?> wordSegmenterClass = classLoader.loadClass("vn.corenlp.wordsegmenter.WordSegmenter");
             Method initializeWordSegmenter = wordSegmenterClass.getMethod("initialize");
@@ -113,7 +109,8 @@ public final class VnCoreNLPServer {
             Class<?> utilsClass = classLoader.loadClass("vn.pipeline.Utils");
             detectLanguage = utilsClass.getMethod("detectLanguage", String.class);
 
-            // Load lib
+            // Load models
+            annotate("SIM số đẹp tăng giá sau thông tin rút về 10 số.", ANNOTATORS.toArray(new String[0]));
 
         } finally {
             // Restore "user.dir" variable
@@ -144,7 +141,6 @@ public final class VnCoreNLPServer {
     }
 
     public static void main(String[] args) {
-        args = new String[] { "C:\\Users\\Anh Khoa\\Desktop\\Data\\Research\\Tools\\VnCoreNLP-1.0.1\\VnCoreNLP-1.0.1.jar" };
         CommandLineParser commandLineParser = new DefaultParser();
         Options options = buildOptions();
         try {
@@ -222,15 +218,18 @@ public final class VnCoreNLPServer {
     }
 
     private static List<Object> annotate(String text, String[] annotators) throws Exception {
-        List<Object> annotatedSentences = new ArrayList<>();
-
+        // Set up necessary arguments
         Map<String, Object> args = new HashMap<>();
         for (String annotator : annotators) {
             args.put(annotator, INITIALIZED_ANNOTATORS.get(annotator));
         }
 
+        List<Object> annotatedSentences = new ArrayList<>();
+
+        // Split text into sentences
         List<?> sentences = (List<?>) joinSentences.invoke(null, tokenize.invoke(null, text));
         for (Object sentence : sentences) {
+            // Annotate each sentence
             sentence = getSentence.newInstance(sentence, args.get(WORDSEGMENTER), args.get(POSTAGGER),
                                                args.get(NERRECOGNIZER), args.get(DEPENDENCYPARSER));
             annotatedSentences.add(getWords.invoke(sentence));
