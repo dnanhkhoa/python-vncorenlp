@@ -6,7 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.InvalidParameterException;
+import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -109,9 +109,8 @@ public final class VnCoreNLPServer {
             Class<?> utilsClass = classLoader.loadClass("vn.pipeline.Utils");
             detectLanguage = utilsClass.getMethod("detectLanguage", String.class);
 
-            // Load models
+            // Load models in first time
             annotate("SIM số đẹp tăng giá sau thông tin rút về 10 số.", ANNOTATORS.toArray(new String[0]));
-
         } finally {
             // Restore "user.dir" variable
             System.setProperty("user.dir", USER_DIR);
@@ -160,8 +159,8 @@ public final class VnCoreNLPServer {
                 for (String annotator : annotators) {
                     if (annotator.length() > 0) {
                         if (!DEFAULT_ANNOTATORS.contains(annotator)) {
-                            throw new InvalidParameterException(String.format("Annotator \"%s\" is invalid.",
-                                                                              annotator));
+                            throw new InvalidParameterSpecException(String.format("Annotator \"%s\" is invalid.",
+                                                                                  annotator));
                         }
                         ANNOTATORS.add(annotator);
                     }
@@ -218,6 +217,10 @@ public final class VnCoreNLPServer {
     }
 
     private static List<Object> annotate(String text, String[] annotators) throws Exception {
+        if (annotators.length > ANNOTATORS.size()) {
+            throw new InvalidParameterSpecException("Annotators are invalid.");
+        }
+
         // Set up necessary arguments
         Map<String, Object> args = new HashMap<>();
         for (String annotator : annotators) {
@@ -243,7 +246,7 @@ public final class VnCoreNLPServer {
             String text = request.queryParams("text");
             String props = request.queryParams("props");
             if (text == null) {
-                throw new InvalidParameterException("Text must not be null.");
+                throw new InvalidParameterSpecException("Text must not be null.");
             }
             if (props == null) {
                 props = String.join(",", DEFAULT_ANNOTATORS);
