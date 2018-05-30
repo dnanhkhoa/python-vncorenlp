@@ -48,7 +48,7 @@ public final class VnCoreNLPServer {
     private static Method                    detectLanguage         = null;
     private static Method                    getWords               = null;
 
-    // For VnCoreNLP Server
+    // For VnCoreNLPServer
     private final static String              USER_DIR               = System.getProperty("user.dir");
 
     private final static Logger              LOGGER                 = LoggerFactory.getLogger(VnCoreNLPServer.class);
@@ -155,7 +155,10 @@ public final class VnCoreNLPServer {
 
                 // Parse annotators
                 String[] annotators = commandLine.getOptionValue("annotators", String.join(",", DEFAULT_ANNOTATORS))
-                        .trim().split("\\s*,\\s*");
+                        .toLowerCase().trim().split("\\s*,\\s*");
+                if (annotators.length > DEFAULT_ANNOTATORS.size()) {
+                    throw new InvalidParameterSpecException("Annotators are invalid.");
+                }
                 for (String annotator : annotators) {
                     if (annotator.length() > 0) {
                         if (!DEFAULT_ANNOTATORS.contains(annotator)) {
@@ -165,7 +168,7 @@ public final class VnCoreNLPServer {
                         ANNOTATORS.add(annotator);
                     }
                 }
-                LOGGER.info("Annotators: " + String.join(", ", DEFAULT_ANNOTATORS));
+                LOGGER.info("Using annotators: " + String.join(", ", ANNOTATORS));
 
                 // Load VnCoreNLP library
                 File vnCoreNLPFile = new File(args[0]);
@@ -217,7 +220,7 @@ public final class VnCoreNLPServer {
     }
 
     private static List<Object> annotate(String text, String[] annotators) throws Exception {
-        if (annotators.length > ANNOTATORS.size()) {
+        if (annotators.length > DEFAULT_ANNOTATORS.size()) {
             throw new InvalidParameterSpecException("Annotators are invalid.");
         }
 
@@ -251,7 +254,11 @@ public final class VnCoreNLPServer {
             if (props == null) {
                 props = String.join(",", DEFAULT_ANNOTATORS);
             }
-            if (props.toLowerCase().equals("lang")) {
+
+            // Normalize properties
+            props = props.toLowerCase().trim();
+
+            if (props.equals("lang")) {
                 try {
                     response.put("language", detectLanguage.invoke(null, text));
                 } catch (Exception ex) {
