@@ -248,11 +248,12 @@ public final class VnCoreNLPServer {
             if (props == null) {
                 props = String.join(",", DEFAULT_ANNOTATORS);
             }
-            if (props.equals("lang")) {
+            if (props.toLowerCase().equals("lang")) {
                 try {
-                    response.put("lang", detectLanguage.invoke(null, text));
+                    response.put("language", detectLanguage.invoke(null, text));
                 } catch (Exception ex) {
-                    response.put("lang", "N/A");
+                    // Respond "No Answer" if error
+                    response.put("language", "N/A");
 
                     // For debugging
                     LOGGER.error(ex.getMessage(), ex);
@@ -271,5 +272,4 @@ public final class VnCoreNLPServer {
         }
         return response;
     }
-
 }
