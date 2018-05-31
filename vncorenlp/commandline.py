@@ -15,7 +15,7 @@ def main():
 
         # Check if Java exists
         if subprocess.call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True):
-            raise FileNotFoundError('Java was not found, please install JRE or JDK 1.8 first.')
+            raise FileNotFoundError('Java was not found, please install JRE or JDK >= 1.8 first.')
 
         args = ['java', '-Xmx2g', '-jar', VNCORENLP_SERVER]
 
