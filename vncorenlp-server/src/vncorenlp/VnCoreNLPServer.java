@@ -156,9 +156,6 @@ public final class VnCoreNLPServer {
                 // Parse annotators
                 String[] annotators = commandLine.getOptionValue("annotators", String.join(",", DEFAULT_ANNOTATORS))
                         .toLowerCase().trim().split("\\s*,\\s*");
-                if (annotators.length > DEFAULT_ANNOTATORS.size()) {
-                    throw new InvalidParameterSpecException("Annotators are invalid.");
-                }
                 for (String annotator : annotators) {
                     if (annotator.length() > 0) {
                         if (!DEFAULT_ANNOTATORS.contains(annotator)) {
@@ -220,14 +217,15 @@ public final class VnCoreNLPServer {
     }
 
     private static List<Object> annotate(String text, String[] annotators) throws Exception {
-        if (annotators.length > DEFAULT_ANNOTATORS.size()) {
-            throw new InvalidParameterSpecException("Annotators are invalid.");
-        }
-
         // Set up necessary arguments
         Map<String, Object> args = new HashMap<>();
         for (String annotator : annotators) {
-            args.put(annotator, INITIALIZED_ANNOTATORS.get(annotator));
+            if (annotator.length() > 0) {
+                if (!DEFAULT_ANNOTATORS.contains(annotator)) {
+                    throw new InvalidParameterSpecException(String.format("Annotator \"%s\" is invalid.", annotator));
+                }
+                args.put(annotator, INITIALIZED_ANNOTATORS.get(annotator));
+            }
         }
 
         List<Object> annotatedSentences = new ArrayList<>();
