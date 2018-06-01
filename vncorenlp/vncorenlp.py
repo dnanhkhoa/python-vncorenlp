@@ -59,7 +59,7 @@ class VnCoreNLP(object):
     def is_alive(self):
         # Check if server is alive
         try:
-            response = requests.get(url=self.url, timeout=self.timeout)
+            response = requests.get(self.url, timeout=self.timeout)
             response.raise_for_status()
             return response.ok
         except RequestException as e:
@@ -77,7 +77,7 @@ class VnCoreNLP(object):
             'text': text.encode('UTF-8'),
             'props': annotators
         }
-        response = requests.post(url=self.url + '/handle', data=data, timeout=self.timeout)
+        response = requests.post(self.url + '/handle', data=data, timeout=self.timeout)
         response.raise_for_status()
         response = response.json()
         if 'status' in response:
@@ -94,10 +94,10 @@ class VnCoreNLP(object):
         annotated_text = self.annotate(text, annotators='wseg,pos')
 
     def ner(self, text):
-        annotated_text = self.annotate(text, annotators='ner')
+        annotated_text = self.annotate(text, annotators='wseg,pos,ner')
 
     def dep_parse(self, text):
-        annotated_text = self.annotate(text, annotators='parse')
+        annotated_text = self.annotate(text, annotators='wseg,pos,ner,parse')
 
     def detect_language(self, text):
         return self.annotate(text, annotators='lang').get('language', 'N/A')
