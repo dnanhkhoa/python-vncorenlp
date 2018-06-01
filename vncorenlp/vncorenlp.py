@@ -86,16 +86,21 @@ class VnCoreNLP(object):
         return response
 
     def tokenize(self, text):
-        annotated_sentences = self.annotate(text, annotators='wseg')['sentences']
+        sentences = self.annotate(text, annotators='wseg')['sentences']
+        return [[w['form'] for w in s] for s in sentences]
 
     def pos_tag(self, text):
-        annotated_sentences = self.annotate(text, annotators='wseg,pos')['sentences']
+        sentences = self.annotate(text, annotators='wseg,pos')['sentences']
+        return [[(w['form'], w['posTag']) for w in s] for s in sentences]
 
     def ner(self, text):
-        annotated_sentences = self.annotate(text, annotators='wseg,pos,ner')['sentences']
+        sentences = self.annotate(text, annotators='wseg,pos,ner')['sentences']
+        return [[(w['form'], w['nerLabel']) for w in s] for s in sentences]
 
     def dep_parse(self, text):
-        annotated_sentences = self.annotate(text, annotators='wseg,pos,ner,parse')['sentences']
+        sentences = self.annotate(text, annotators='wseg,pos,ner,parse')['sentences']
+        # dep, governor, dependent
+        return [[(w['depLabel'], w['head'], w['index']) for w in s] for s in sentences]
 
     def detect_language(self, text):
         return self.annotate(text, annotators='lang')['language']
