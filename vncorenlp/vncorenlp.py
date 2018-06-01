@@ -80,24 +80,22 @@ class VnCoreNLP(object):
         response = requests.post(self.url + '/handle', data=data, timeout=self.timeout)
         response.raise_for_status()
         response = response.json()
-        if 'status' in response:
-            if not response['status']:
-                raise ValueError(response.get('error', 'Unexpected error from server.'))
-            del response['status']
+        if not response['status']:
+            raise ValueError(response['error'])
+        del response['status']
         return response
 
     def tokenize(self, text):
-        annotated_text = self.annotate(text, annotators='wseg')
-        pass
+        annotated_sentences = self.annotate(text, annotators='wseg')['sentences']
 
     def pos_tag(self, text):
-        annotated_text = self.annotate(text, annotators='wseg,pos')
+        annotated_sentences = self.annotate(text, annotators='wseg,pos')['sentences']
 
     def ner(self, text):
-        annotated_text = self.annotate(text, annotators='wseg,pos,ner')
+        annotated_sentences = self.annotate(text, annotators='wseg,pos,ner')['sentences']
 
     def dep_parse(self, text):
-        annotated_text = self.annotate(text, annotators='wseg,pos,ner,parse')
+        annotated_sentences = self.annotate(text, annotators='wseg,pos,ner,parse')['sentences']
 
     def detect_language(self, text):
-        return self.annotate(text, annotators='lang').get('language', 'N/A')
+        return self.annotate(text, annotators='lang')['language']
