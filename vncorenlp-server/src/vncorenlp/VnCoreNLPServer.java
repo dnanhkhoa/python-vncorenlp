@@ -109,7 +109,7 @@ public final class VnCoreNLPServer {
             Class<?> utilsClass = classLoader.loadClass("vn.pipeline.Utils");
             detectLanguage = utilsClass.getMethod("detectLanguage", String.class);
 
-            // Load models in first time
+            // Load models for the first time
             annotate("SIM số đẹp tăng giá sau thông tin rút về 10 số.", ANNOTATORS.toArray(new String[0]));
         } finally {
             // Restore "user.dir" variable
@@ -206,10 +206,10 @@ public final class VnCoreNLPServer {
         try {
             LOGGER.info("VnCoreNLPServer is stopping Spark services...");
             Spark.stop();
-            LOGGER.info("VnCoreNLPServer is done cleaning up.");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+        LOGGER.info("VnCoreNLPServer is done cleaning up.");
     }
 
     public static String index() {

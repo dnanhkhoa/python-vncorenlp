@@ -35,6 +35,8 @@ class VnCoreNLP(object):
         # Start server
         self.process = None  # subprocess.Popen(args)
 
+        return
+
         # Waiting until the server is available
         while not self.is_alive():
             break
@@ -46,7 +48,7 @@ class VnCoreNLP(object):
         # Stop server and clean up
         if self.process:
             self.logger.info(__class__.__name__ + ': cleaning up...')
-            self.logger.info(__class__.__name__ + ': killing VnCoreNLPServer process (%s)...' % self.process.pid)
+            self.logger.info(__class__.__name__ + ': killing server process (%s)...' % self.process.pid)
 
             # Kill process
             self.process.kill()
@@ -73,25 +75,29 @@ class VnCoreNLP(object):
     def annotate(self, text, annotators=None):
         data = {
             'text': text.encode('UTF-8'),
-            'props': annotators or self.annotators
+            'props': annotators
         }
         response = requests.post(url=self.url + '/handle', data=data, timeout=self.timeout)
         response.raise_for_status()
         response = response.json()
-        # status:bool
-        return response.get('result', None)
+        if 'status' in response:
+            if not response['status']:
+                raise ValueError(response.get('error', 'Unexpected error from server.'))
+            del response['status']
+        return response
 
     def tokenize(self, text):
-        annotated_text = self.annotate(text=text)
+        annotated_text = self.annotate(text, annotators='wseg')
+        pass
 
     def pos_tag(self, text):
-        pass
+        annotated_text = self.annotate(text, annotators='wseg,pos')
 
     def ner(self, text):
-        pass
+        annotated_text = self.annotate(text, annotators='ner')
 
     def dep_parse(self, text):
-        pass
+        annotated_text = self.annotate(text, annotators='parse')
 
     def detect_language(self, text):
-        pass
+        return self.annotate(text, annotators='lang').get('language', 'N/A')
