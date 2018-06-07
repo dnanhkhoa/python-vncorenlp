@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import socket
 import subprocess
 import time
+from urllib.parse import urlparse
 
 import requests
 from requests.exceptions import RequestException
@@ -15,33 +17,61 @@ VNCORENLP_SERVER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath
 
 
 class VnCoreNLP(object):
-    def __init__(self, address='0.0.0.0', port=None, annotators='wseg,pos,ner,parse', timeout=30, quiet=True):
+    def __init__(self, address='http://127.0.0.1', port=None, timeout=30, annotators='wseg,pos,ner,parse',
+                 max_heap_size='-Xmx2g', quiet=True):
+
+        # Add logger
         self.logger = logging.getLogger(__name__)
 
-        self.annotators = annotators
-        self.url = None
+        # Get a random port if port is not set
+        if port is None:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('', 0))
+                port = s.getsockname()[1]
+
+        # Default host
+        scheme, host = 'http', '127.0.0.1'
+
+        if address.startswith('http'):
+            o = urlparse(address)
+            scheme, host = o.scheme, o.netloc
+            self.logger.info('Using an existing server %s://%s:%s' % (scheme, host, port))
+        else:
+            # Check if VnCoreNLP file exists
+            if not os.path.isfile(address):
+                raise FileNotFoundError('File "%s" was not found, please check again.' % address)
+
+            # Check if server file exists
+            if not os.path.isfile(VNCORENLP_SERVER):
+                raise FileNotFoundError('File "VnCoreNLPServer.jar" was not found, please re-install this package.')
+
+            # Check if Java exists
+            if subprocess.call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True):
+                raise FileNotFoundError('Java was not found, please install JRE or JDK 1.8 first.')
+
+            # Start server
+            self.logger.info('Starting server...')
+
+            args = {
+                'args': ['java', max_heap_size, '-jar', VNCORENLP_SERVER, address, '-i', host, '-p', str(port), '-a',
+                         annotators]
+            }
+            if quiet:
+                args['stdout'] = subprocess.DEVNULL
+                args['stderr'] = subprocess.DEVNULL
+
+            self.process = subprocess.Popen(**args)
+            self.logger.info('Server ID: %d' % self.process.pid)
+
+        self.url = '%s://%s:%s' % (scheme, host, port)
         self.timeout = timeout
 
-        # Check if server file exists
-        if not os.path.isfile(VNCORENLP_SERVER):
-            raise FileNotFoundError('File "VnCoreNLPServer.jar" was not found, please re-install this package.')
-
-        # Check if Java exists
-        if subprocess.call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True):
-            raise FileNotFoundError('Java was not found, please install JRE or JDK 1.8 first.')
-
-        args = ['java', '-Xmx2g', '-jar', VNCORENLP_SERVER]
-
-        # Start server
-        self.process = None  # subprocess.Popen(args)
-
-        return
-
-        # Waiting until the server is available
-        while not self.is_alive():
-            break
-            self.logger.info('Waiting until the server is available.')
-            time.sleep(5)
+        # Waiting until server is available
+        attempts = 0
+        while attempts < 30 and not self.is_alive():
+            self.logger.info('Waiting until the server is available...')
+            time.sleep(10)
+            attempts += 1
         self.logger.info('The server is available.')
 
     def close(self):
@@ -60,10 +90,9 @@ class VnCoreNLP(object):
         # Check if server is alive
         try:
             response = requests.get(self.url, timeout=self.timeout)
-            response.raise_for_status()
             return response.ok
-        except RequestException as e:
-            self.logger.exception(e)
+        except RequestException:
+            pass
         return False
 
     def __enter__(self):
@@ -81,7 +110,7 @@ class VnCoreNLP(object):
         response.raise_for_status()
         response = response.json()
         if not response['status']:
-            raise ValueError(response['error'])
+            raise Exception(response['error'])
         del response['status']
         return response
 
