@@ -11,7 +11,7 @@ def main():
     try:
         # Check if server file exists
         if not os.path.isfile(VNCORENLP_SERVER):
-            raise FileNotFoundError('File "VnCoreNLPServer.jar" was not found, please re-install this package.')
+            raise FileNotFoundError('File "%s" was not found, please re-install this package.' % VNCORENLP_SERVER)
 
         # Check if Java exists
         if subprocess.call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True):

@@ -29,34 +29,36 @@ class VnCoreNLP(object):
                 s.bind(('', 0))
                 port = s.getsockname()[1]
 
-        # Default host
-        scheme, host = 'http', '127.0.0.1'
+        # Default URL
+        self.url = 'http://127.0.0.1:' + str(port)
+        self.timeout = timeout
 
+        # Default process
         self.process = None
 
         if address.startswith('http'):
             o = urlparse(address)
-            scheme, host = o.scheme, o.netloc
-            self.logger.info('Using an existing server %s://%s:%s' % (scheme, host, port))
+            self.url = '%s://%s:%d' % (o.scheme, o.netloc, port)
+            self.logger.info('Using an existing server: %s' % self.url)
         else:
             # Check if VnCoreNLP file exists
             if not os.path.isfile(address):
                 raise FileNotFoundError('File "%s" was not found, please check again.' % address)
 
-            # Check if server file exists
+            # Check if VnCoreNLPServer file exists
             if not os.path.isfile(VNCORENLP_SERVER):
-                raise FileNotFoundError('File "VnCoreNLPServer.jar" was not found, please re-install this package.')
+                raise FileNotFoundError('File "%s" was not found, please re-install this package.' % VNCORENLP_SERVER)
 
             # Check if Java exists
             if subprocess.call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True):
                 raise FileNotFoundError('Java was not found, please install JRE or JDK 1.8 first.')
 
-            # Start server
-            self.logger.info('Starting server on ...')
+            # Start the server
+            self.logger.info('Starting server on: %s' % self.url)
 
             args = {
-                'args': ['java', max_heap_size, '-jar', VNCORENLP_SERVER, address, '-i', host, '-p', str(port), '-a',
-                         annotators]
+                'args': ['java', max_heap_size, '-jar', VNCORENLP_SERVER, address, '-i',
+                         urlparse(self.url).netloc.split(':')[0], '-p', str(port), '-a', annotators]
             }
             if quiet:
                 args['stdout'] = subprocess.DEVNULL
@@ -65,19 +67,18 @@ class VnCoreNLP(object):
             self.process = subprocess.Popen(**args)
             self.logger.info('Server ID: %d' % self.process.pid)
 
-        self.url = '%s://%s:%d' % (scheme, host, port)
-        self.timeout = timeout
-
-        # Waiting until server is available
+        # Waiting until the server is available
         attempts = 0
-        while attempts < 30 and not self.is_alive():
+        while attempts < 100 and not self.is_alive():
             if self.process and self.process.poll():
-                raise RuntimeError('Error')
+                raise RuntimeError('The server has stopped working.')
             self.logger.info('Waiting until the server is available...')
-            time.sleep(10)
             attempts += 1
-        self.logger.info('The server is available.')
+            time.sleep(5)
+
+        # Store the annotators getting from the server
         self.annotators = set(self.__get_annotators())
+        self.logger.info('The server is now available on: %s' % self.url)
 
     def close(self):
         # Stop the server and clean up
