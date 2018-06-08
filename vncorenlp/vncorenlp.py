@@ -32,6 +32,8 @@ class VnCoreNLP(object):
         # Default host
         scheme, host = 'http', '127.0.0.1'
 
+        self.process = None
+
         if address.startswith('http'):
             o = urlparse(address)
             scheme, host = o.scheme, o.netloc
@@ -50,7 +52,7 @@ class VnCoreNLP(object):
                 raise FileNotFoundError('Java was not found, please install JRE or JDK 1.8 first.')
 
             # Start server
-            self.logger.info('Starting server...')
+            self.logger.info('Starting server on ...')
 
             args = {
                 'args': ['java', max_heap_size, '-jar', VNCORENLP_SERVER, address, '-i', host, '-p', str(port), '-a',
@@ -63,22 +65,25 @@ class VnCoreNLP(object):
             self.process = subprocess.Popen(**args)
             self.logger.info('Server ID: %d' % self.process.pid)
 
-        self.url = '%s://%s:%s' % (scheme, host, port)
+        self.url = '%s://%s:%d' % (scheme, host, port)
         self.timeout = timeout
 
         # Waiting until server is available
         attempts = 0
         while attempts < 30 and not self.is_alive():
+            if self.process and self.process.poll():
+                raise RuntimeError('Error')
             self.logger.info('Waiting until the server is available...')
             time.sleep(10)
             attempts += 1
         self.logger.info('The server is available.')
+        self.annotators = set(self.__get_annotators())
 
     def close(self):
-        # Stop server and clean up
+        # Stop the server and clean up
         if self.process:
             self.logger.info(__class__.__name__ + ': cleaning up...')
-            self.logger.info(__class__.__name__ + ': killing server process (%s)...' % self.process.pid)
+            self.logger.info(__class__.__name__ + ': killing the server process (%s)...' % self.process.pid)
 
             # Kill process
             self.process.kill()
@@ -87,13 +92,19 @@ class VnCoreNLP(object):
             self.logger.info(__class__.__name__ + ': done.')
 
     def is_alive(self):
-        # Check if server is alive
+        # Check if the server is alive
         try:
             response = requests.get(self.url, timeout=self.timeout)
             return response.ok
         except RequestException:
             pass
         return False
+
+    def __get_annotators(self):
+        # Get list of annotators from the server
+        response = requests.get(self.url + '/annotators', timeout=self.timeout)
+        response.raise_for_status()
+        return response.json()
 
     def __enter__(self):
         return self
@@ -110,7 +121,7 @@ class VnCoreNLP(object):
         response.raise_for_status()
         response = response.json()
         if not response['status']:
-            raise Exception(response['error'])
+            raise RuntimeError(response['error'])
         del response['status']
         return response
 
@@ -119,15 +130,24 @@ class VnCoreNLP(object):
         return [[w['form'] for w in s] for s in sentences]
 
     def pos_tag(self, text):
-        sentences = self.annotate(text, annotators='wseg,pos')['sentences']
+        annotators = 'wseg,pos'
+        if not self.annotators.issuperset(annotators):
+            raise RuntimeError('Please ensure that the annotators "%s" are being used on the server.' % annotators)
+        sentences = self.annotate(text, annotators=annotators)['sentences']
         return [[(w['form'], w['posTag']) for w in s] for s in sentences]
 
     def ner(self, text):
-        sentences = self.annotate(text, annotators='wseg,pos,ner')['sentences']
+        annotators = 'wseg,pos,ner'
+        if not self.annotators.issuperset(annotators):
+            raise RuntimeError('Please ensure that the annotators "%s" are being used on the server.' % annotators)
+        sentences = self.annotate(text, annotators=annotators)['sentences']
         return [[(w['form'], w['nerLabel']) for w in s] for s in sentences]
 
     def dep_parse(self, text):
-        sentences = self.annotate(text, annotators='wseg,pos,ner,parse')['sentences']
+        annotators = 'wseg,pos,ner,parse'
+        if not self.annotators.issuperset(annotators):
+            raise RuntimeError('Please ensure that the annotators "%s" are being used on the server.' % annotators)
+        sentences = self.annotate(text, annotators=annotators)['sentences']
         # dep, governor, dependent
         return [[(w['depLabel'], w['head'], w['index']) for w in s] for s in sentences]
 
