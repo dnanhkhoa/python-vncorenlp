@@ -39,7 +39,7 @@ def simple_usage():
     sentences = 'VTV đồng ý chia sẻ bản quyền World Cup 2018 cho HTV để khai thác. ' \
                 'Nhưng cả hai nhà đài đều phải chờ sự đồng ý của FIFA mới thực hiện được điều này.'
 
-    # Using "with ... as" to close the server automatically
+    # Use "with ... as" to close the server automatically
     with VnCoreNLP(vncorenlp_file) as vncorenlp:
         print('Tokenizing:', vncorenlp.tokenize(sentences))
         print('POS Tagging:', vncorenlp.pos_tag(sentences))
@@ -374,7 +374,7 @@ import sys
 from vncorenlp import VnCoreNLP
 
 
-# 1. Using the global logger
+# 1. Use the global logger
 # logging.basicConfig(level=logging.DEBUG)
 
 def simple_usage():
@@ -383,7 +383,7 @@ def simple_usage():
     sentences = 'VTV đồng ý chia sẻ bản quyền World Cup 2018 cho HTV để khai thác. ' \
                 'Nhưng cả hai nhà đài đều phải chờ sự đồng ý của FIFA mới thực hiện được điều này.'
 
-    # Using "with ... as" to close the server automatically
+    # Use "with ... as" to close the server automatically
     vncorenlp = VnCoreNLP(vncorenlp_file)
 
     # 2. Set up the local logger here
