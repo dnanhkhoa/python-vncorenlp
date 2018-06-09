@@ -114,6 +114,8 @@ class VnCoreNLP(object):
         self.close()
 
     def annotate(self, text, annotators=None):
+        assert isinstance(annotators, str) and self.annotators.issuperset(
+            annotators.split(',')), 'Please ensure that the annotators "%s" are being used on the server.' % annotators
         data = {
             'text': text.encode('UTF-8'),
             'props': annotators
@@ -121,8 +123,7 @@ class VnCoreNLP(object):
         response = requests.post(self.url + '/handle', data=data, timeout=self.timeout)
         response.raise_for_status()
         response = response.json()
-        if not response['status']:
-            raise RuntimeError(response['error'])
+        assert response['status'], response['error']
         del response['status']
         return response
 
@@ -131,24 +132,15 @@ class VnCoreNLP(object):
         return [[w['form'] for w in s] for s in sentences]
 
     def pos_tag(self, text):
-        annotators = 'wseg,pos'
-        if not self.annotators.issuperset(annotators):
-            raise RuntimeError('Please ensure that the annotators "%s" are being used on the server.' % annotators)
-        sentences = self.annotate(text, annotators=annotators)['sentences']
+        sentences = self.annotate(text, annotators='wseg,pos')['sentences']
         return [[(w['form'], w['posTag']) for w in s] for s in sentences]
 
     def ner(self, text):
-        annotators = 'wseg,pos,ner'
-        if not self.annotators.issuperset(annotators):
-            raise RuntimeError('Please ensure that the annotators "%s" are being used on the server.' % annotators)
-        sentences = self.annotate(text, annotators=annotators)['sentences']
+        sentences = self.annotate(text, annotators='wseg,pos,ner')['sentences']
         return [[(w['form'], w['nerLabel']) for w in s] for s in sentences]
 
     def dep_parse(self, text):
-        annotators = 'wseg,pos,ner,parse'
-        if not self.annotators.issuperset(annotators):
-            raise RuntimeError('Please ensure that the annotators "%s" are being used on the server.' % annotators)
-        sentences = self.annotate(text, annotators=annotators)['sentences']
+        sentences = self.annotate(text, annotators='wseg,pos,ner,parse')['sentences']
         # dep, governor, dependent
         return [[(w['depLabel'], w['head'], w['index']) for w in s] for s in sentences]
 
