@@ -77,7 +77,7 @@ class VnCoreNLP(object):
             time.sleep(5)
 
         # Store the annotators getting from the server
-        self.annotators = set(self.__get_annotators())
+        self.annotators = set(self.__get_annotators() + ['lang'])
         self.logger.info('The server is now available on: %s' % self.url)
 
     def close(self):
@@ -114,8 +114,9 @@ class VnCoreNLP(object):
         self.close()
 
     def annotate(self, text, annotators=None):
-        assert isinstance(annotators, str) and self.annotators.issuperset(
-            annotators.split(',')), 'Please ensure that the annotators "%s" are being used on the server.' % annotators
+        if isinstance(annotators, str):
+            assert self.annotators.issuperset(annotators.split(
+                ',')), 'Please ensure that the annotators "%s" are being used on the server.' % annotators
         data = {
             'text': text.encode('UTF-8'),
             'props': annotators
