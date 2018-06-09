@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/vncorenlp.svg)]()
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/vncorenlp.svg)]()
 
-A Python wrapper for VnCoreNLP using a bidirectional communication channel.
+A Python wrapper for [VnCoreNLP](https://github.com/vncorenlp/VnCoreNLP) using a bidirectional communication channel.
 
 ## Prerequisites
 
@@ -39,6 +39,7 @@ def simple_usage():
     sentences = 'VTV đồng ý chia sẻ bản quyền World Cup 2018 cho HTV để khai thác. ' \
                 'Nhưng cả hai nhà đài đều phải chờ sự đồng ý của FIFA mới thực hiện được điều này.'
 
+    # Using "with ... as" to close the server automatically
     with VnCoreNLP(vncorenlp_file) as vncorenlp:
         print('Tokenizing:', vncorenlp.tokenize(sentences))
         print('POS Tagging:', vncorenlp.pos_tag(sentences))
@@ -47,12 +48,25 @@ def simple_usage():
         print('Annotating:', vncorenlp.annotate(sentences))
         print('Language:', vncorenlp.detect_language(sentences))
 
+    # In this way, you have to close the server manually by calling close function
+    vncorenlp = VnCoreNLP(vncorenlp_file)
+
+    print('Tokenizing:', vncorenlp.tokenize(sentences))
+    print('POS Tagging:', vncorenlp.pos_tag(sentences))
+    print('Named-Entity Recognizing:', vncorenlp.ner(sentences))
+    print('Dependency Parsing:', vncorenlp.dep_parse(sentences))
+    print('Annotating:', vncorenlp.annotate(sentences))
+    print('Language:', vncorenlp.detect_language(sentences))
+
+    # Do not forget to close the server
+    vncorenlp.close()
+
 
 if __name__ == '__main__':
     simple_usage()
 ```
 
-And here is an output:
+And here is the output:
 
 ```
 Tokenizing:
@@ -329,14 +343,131 @@ Annotating:
 Language: vi
 ```
 
-## Use an Existing Server
+## Use An Existing Server
 
 First, you need to start the VnCoreNLPServer using this command:
 
 ```
-$ vncorenlp -Xmx2g <VnCoreNLP> -p 9000 -a "wseg,pos,ner,parse"
+$ vncorenlp -Xmx2g <VnCoreNLP File> -p 9000 -a "wseg,pos,ner,parse"
 ```
 
+The parameter `-Xmx2g` means that the VM can allocate a maximum of 2 GB for the Heap Space.
+
+And then connect to the server using this code:
+
+```python
+# Use the existing server
+with VnCoreNLP(address='http://127.0.0.1', port=9000) as vncorenlp:
+    ...
+```
+
+## Debug
+
+There are 3 ways to enable debugging:
+
+```python
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import logging
+import sys
+
+from vncorenlp import VnCoreNLP
+
+
+# 1. Using the global logger
+# logging.basicConfig(level=logging.DEBUG)
+
+def simple_usage():
+    vncorenlp_file = r'.../VnCoreNLP-1.0.1/VnCoreNLP-1.0.1.jar'
+
+    sentences = 'VTV đồng ý chia sẻ bản quyền World Cup 2018 cho HTV để khai thác. ' \
+                'Nhưng cả hai nhà đài đều phải chờ sự đồng ý của FIFA mới thực hiện được điều này.'
+
+    # Using "with ... as" to close the server automatically
+    vncorenlp = VnCoreNLP(vncorenlp_file)
+
+    # 2. Set up the local logger here
+    logger = vncorenlp.logger
+    logger.setLevel(logging.DEBUG)
+    # Add stdout
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    # Add formatter
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    with vncorenlp:
+        print('Tokenizing:', vncorenlp.tokenize(sentences))
+        print('POS Tagging:', vncorenlp.pos_tag(sentences))
+        print('Named-Entity Recognizing:', vncorenlp.ner(sentences))
+        print('Dependency Parsing:', vncorenlp.dep_parse(sentences))
+        print('Annotating:', vncorenlp.annotate(sentences))
+        print('Language:', vncorenlp.detect_language(sentences))
+
+    # In this way, you have to close the server manually by calling close function
+    vncorenlp = VnCoreNLP(vncorenlp_file)
+
+    # 3. Set up the local logger here
+    logger = vncorenlp.logger
+    logger.setLevel(logging.DEBUG)
+    # Add stdout
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    # Add formatter
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    print('Tokenizing:', vncorenlp.tokenize(sentences))
+    print('POS Tagging:', vncorenlp.pos_tag(sentences))
+    print('Named-Entity Recognizing:', vncorenlp.ner(sentences))
+    print('Dependency Parsing:', vncorenlp.dep_parse(sentences))
+    print('Annotating:', vncorenlp.annotate(sentences))
+    print('Language:', vncorenlp.detect_language(sentences))
+
+    # Do not forget to close the server
+    vncorenlp.close()
+
+
+if __name__ == '__main__':
+    simple_usage()
+```
+
+## Some Use Cases
+
+```python
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import logging
+
+from vncorenlp import VnCoreNLP
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+def simple_usage():
+    vncorenlp_file = r'.../VnCoreNLP-1.0.1/VnCoreNLP-1.0.1.jar'
+
+    sentences = 'VTV đồng ý chia sẻ bản quyền World Cup 2018 cho HTV để khai thác. ' \
+                'Nhưng cả hai nhà đài đều phải chờ sự đồng ý của FIFA mới thực hiện được điều này.'
+
+    # Use only word segmentation
+    with VnCoreNLP(vncorenlp_file, annotators="wseg") as vncorenlp:
+        print('Tokenizing:', vncorenlp.tokenize(sentences))
+
+    # Specify the maximum heap size
+    with VnCoreNLP(vncorenlp_file, annotators="wseg", max_heap_size='-Xmx4g') as vncorenlp:
+        print('Tokenizing:', vncorenlp.tokenize(sentences))
+
+    # For debugging
+    with VnCoreNLP(vncorenlp_file, annotators="wseg", max_heap_size='-Xmx4g', quiet=False) as vncorenlp:
+        print('Tokenizing:', vncorenlp.tokenize(sentences))
+
+
+if __name__ == '__main__':
+    simple_usage()
+```
 
 ## License
 
