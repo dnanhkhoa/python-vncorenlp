@@ -1,14 +1,14 @@
-# Python-vncorenlp
+# python-vncorenlp
 
-![python-vncorenlp status](https://img.shields.io/pypi/v/vncorenlp.svg)
+[![PyPI](https://img.shields.io/pypi/v/vncorenlp.svg)]()
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/vncorenlp.svg)]()
 
 A Python wrapper for VnCoreNLP using a bidirectional communication channel.
 
 ## Prerequisites
 
-- Java 1.8+ (Download)
-
-- VnCoreNLP (Download)
+- Java 1.8+ ([JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) or [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html))
+- VnCoreNLP ([Github](https://github.com/vncorenlp/VnCoreNLP) or [Download](https://github.com/vncorenlp/VnCoreNLP/archive/master.zip))
 
 ## Installation
 
@@ -20,7 +20,7 @@ $ [sudo] pip install vncorenlp
 
 ## Example Usage
 
-Here is an example of how easy it is to get started:
+A simple example of how to use `vncorenlp`:
 
 ```python
 #!/usr/bin/python
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     simple_usage()
 ```
 
-And here is terminal output:
+And here is an output:
 
 ```
 Tokenizing:
