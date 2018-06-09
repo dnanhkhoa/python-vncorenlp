@@ -1,4 +1,4 @@
 include README.md
 include LICENSE
 include CHANGELOG
-include bin/*.jar
+include vncorenlp/bin/*.jar

@@ -12,8 +12,7 @@ from requests.exceptions import RequestException
 
 __author__ = 'dnanhkhoa'
 
-VNCORENLP_SERVER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                 '../bin/VnCoreNLPServer.jar'))
+VNCORENLP_SERVER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin/VnCoreNLPServer.jar'))
 
 
 class VnCoreNLP(object):

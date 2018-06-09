@@ -13,7 +13,7 @@ def readme(file_name):
 
 
 setup(name='vncorenlp',
-      version='1.0.0',
+      version='1.0.1',
       description='A Python wrapper for VnCoreNLP using a bidirectional communication channel.',
       long_description=readme(file_name='README.md'),
       keywords='python-vncorenlp vncorenlp nlp vietnamese-nlp parser word-segmentation tokenizer pos-tagger '
@@ -24,7 +24,6 @@ setup(name='vncorenlp',
       license='MIT',
       packages=['vncorenlp'],
       zip_safe=False,
-      include_package_data=True,
       install_requires=['requests'],
       entry_points={
           'console_scripts': ['vncorenlp=vncorenlp.commandline:main']
