@@ -18,6 +18,8 @@ You can install this package from PyPI using [pip](http://www.pip-installer.org)
 $ [sudo] pip install vncorenlp
 ```
 
+For Windows users, please ensure that you run the `Command Prompt` with admin privileges.
+
 ## Example Usage
 
 A simple example of how to use `vncorenlp`:
