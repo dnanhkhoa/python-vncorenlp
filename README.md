@@ -5,15 +5,15 @@
 
 A Python wrapper for [VnCoreNLP](https://github.com/vncorenlp/VnCoreNLP) using a bidirectional communication channel.
 
-## Table of contents
+## Table Of Contents
 
-   * [Prerequisites](#prerequisites)
-   * [Installation](#installation)
-   * [Example Usage](#example-usage)
-   * [Use An Existing Server](#use-an-existing-server)
-   * [Debug](#debug)
-   * [Some Use Cases](#some-use-cases)
-   * [License](#license)
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+  * [Example Usage](#example-usage)
+  * [Use An Existing Server](#use-an-existing-server)
+  * [Debug](#debug)
+  * [Some Use Cases](#some-use-cases)
+  * [License](#license)
 
 ## Prerequisites
 
