@@ -5,6 +5,16 @@
 
 A Python wrapper for [VnCoreNLP](https://github.com/vncorenlp/VnCoreNLP) using a bidirectional communication channel.
 
+## Table of contents
+
+   * [Prerequisites](#prerequisites)
+   * [Installation](#installation)
+   * [Example Usage](#example-usage)
+   * [Use An Existing Server](#use-an-existing-server)
+   * [Debug](#debug)
+   * [Some Use Cases](#some-use-cases)
+   * [License](#license)
+
 ## Prerequisites
 
 - Java 1.8+ ([JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) or [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html))
@@ -18,7 +28,7 @@ You can install this package from PyPI using [pip](http://www.pip-installer.org)
 $ [sudo] pip install vncorenlp
 ```
 
-For Windows users, please ensure that you run the `Command Prompt` with admin privileges.
+For Windows users, please ensure that you run the `Command Prompt` with **admin** privileges.
 
 ## Example Usage
 
