@@ -357,7 +357,7 @@ Language: vi
 
 ## Use An Existing Server
 
-**I highly recommend you using this approach to save your time when you are debugging your code.**
+**I highly recommend you to use this approach to save your time when you are debugging your code.**
 
 First, you need to start the VnCoreNLPServer using this command:
 
