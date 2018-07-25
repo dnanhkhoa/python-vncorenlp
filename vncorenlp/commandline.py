@@ -14,7 +14,9 @@ def main():
             raise FileNotFoundError('File "%s" was not found, please re-install this package.' % VNCORENLP_SERVER)
 
         # Check if Java exists
-        if subprocess.call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True):
+        try:
+            subprocess.check_call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
             raise FileNotFoundError('Java was not found, please install JRE or JDK >= 1.8 first.')
 
         args = ['java', '-Xmx2g', '-jar', VNCORENLP_SERVER]

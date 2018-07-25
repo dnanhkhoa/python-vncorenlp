@@ -13,7 +13,7 @@ def readme(file_name):
 
 
 setup(name='vncorenlp',
-      version='1.0.2',
+      version='1.0.3',
       description='A Python wrapper for VnCoreNLP using a bidirectional communication channel.',
       long_description=readme(file_name='README.md'),
       keywords='python-vncorenlp vncorenlp nlp vietnamese-nlp parser word-segmentation tokenizer pos-tagger '

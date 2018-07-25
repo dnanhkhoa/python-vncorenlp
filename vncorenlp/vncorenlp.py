@@ -49,8 +49,10 @@ class VnCoreNLP(object):
                 raise FileNotFoundError('File "%s" was not found, please re-install this package.' % VNCORENLP_SERVER)
 
             # Check if Java exists
-            if subprocess.call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True):
-                raise FileNotFoundError('Java was not found, please install JRE or JDK 1.8 first.')
+            try:
+                subprocess.check_call(['java', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except FileNotFoundError:
+                raise FileNotFoundError('Java was not found, please install JRE or JDK >= 1.8 first.')
 
             # Start the server
             self.logger.info('Starting server on: %s' % self.url)
